@@ -2,7 +2,7 @@
 """
 Created on Thu May 16 16:34:06 2024
 
-@author: alexpapa
+@author: Alexandros Papagiannakis, Christine Jacobs-Wagner lab, HHMI at Stanford University
 """
 
 
@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 import os
 import skimage
-# import LoG_adaptive_image_filter as log
 import matplotlib.pyplot as plt
 
 
@@ -71,14 +70,6 @@ class flow_cytometry_class(object):
 
     def segment_cell_images(self, 
                             hard_threshold=775, min_area=35, check_segmentation=False):
-        
-        # log_params = [1, 1000, 95, 1, 19, -10, 0], 
-        # area_threshold = 50,
-        # rounds_of_erosion = 2
-        # resized_img = skimage.transform.resize(img, (img.shape[0]*resize_factor, img.shape[1]*resize_factor))
-        # log_image = log.log_adaptive_filter(img, log_params)[1]
-        # log_image = skimage.morphology.remove_small_objects(log_image, area_threshold)
-        # log_image = skimage.morphology.convex_hull_object(log_image, connectivity=2)
 
         cell_masks = {}
         cell_areas = {}
@@ -114,9 +105,12 @@ class flow_cytometry_class(object):
     
     def get_cell_masks(self):
         return self.cell_masks
+
     
     def get_cell_areas(self):
         return self.cell_areas
+
+    # gating functions will be implemented soon
     
     
 
