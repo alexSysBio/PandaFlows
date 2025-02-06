@@ -2,66 +2,42 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.abspath(os.getcwd()), "/flow_cytometry_class.py"))
 import flow_cytometry_class as flowc
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.widgets import PolygonSelector, SpanSelector
-import matplotlib.widgets as mwidgets
-import span_histogram_selection as sh
+import pickle_read_save as prs
 
-fc_data_ceph = '/Volumes/Data_01/Alex Papagiannakis/Microscopy/DRAQ5_staining/CJW7323/Flow_cytometry_CJW7323/02042025_CJW7323_M9glyCAAT_Ceph50.fcs'
-fc_data_nont = '/Volumes/Data_01/Alex Papagiannakis/Microscopy/DRAQ5_staining/CJW7323/Flow_cytometry_CJW7323/02042025_CJW7323_M9glyCAAT_exp.fcs'
+fc_data_ceph = '/Users/alexandros/Downloads/02042025_CJW7323_M9glyCAAT_Ceph50.fcs'
+fc_data_nont = '/Users/alexandros/Downloads/02042025_CJW7323_M9glyCAAT_exp.fcs'
 
 fn = flowc.flow_cytometry_class(fc_data_nont, 'none')
 fc = flowc.flow_cytometry_class(fc_data_ceph, 'none')
 
-# n_df = fn.get_flow_cytometry_dataframe()
-# c_df = fc.get_flow_cytometry_dataframe()
-
-
-# plt.figure(figsize=(7,5))
-# plot_df = n_df[n_df['RL1-H']>0]
-# plt.hist(plot_df['RL1-H'], bins=np.arange(0,400,5), histtype='step')
-# print(plot_df['RL1-H'].median())
-# plot_df = c_df[c_df['RL1-H']>0]
-# plt.hist(plot_df['RL1-H'], bins=np.arange(0,400,5), histtype='step')
-# print(plot_df['RL1-H'].median())
-# plt.show()
-
-# plt.figure(figsize=(7,5))
-# plot_df = n_df[n_df['RL1-A']>0]
-# plt.hist(plot_df['RL1-A'], bins=np.arange(0,450,7), histtype='step')
-# print(plot_df['RL1-A'].median())
-# plot_df = c_df[c_df['RL1-A']>0]
-# plt.hist(plot_df['RL1-A'], bins=np.arange(0,450,7), histtype='step')
-# print(plot_df['RL1-A'].median())
-# plt.show()
-
-# plt.figure(figsize=(7,5))
-# plot_df = n_df[n_df['RL1-W']>0]
-# plt.hist(plot_df['RL1-W'], bins=np.arange(0,50,1), histtype='step')
-# print(plot_df['RL1-W'].median())
-# plot_df = c_df[c_df['RL1-W']>0]
-# hist_data = plt.hist(plot_df['RL1-W'], bins=np.arange(0,50,1), histtype='step')
-# print(plot_df['RL1-W'].median())
-# plt.show()
 
 # sh.return_selected_ranges(plot_df['RL1-A'], np.arange(0,450,2), 'RL1-A')
-fcs_df = fn.get_flow_cytometry_dataframe()
-print(fcs_df.describe())
+# fcs_df = fn.get_flow_cytometry_dataframe()
+# print(fcs_df.describe())
 
-fn.histogram_gate('RL2-A', log=False, bin_array=np.arange(0,6000,1))
-fcs_df = fn.get_flow_cytometry_dataframe()
-print(fcs_df.describe())
+# fn.histogram_gate('RL2-A', log=False, bin_array=np.arange(0,6000,1))
+# fcs_df = fn.get_flow_cytometry_dataframe()
+# print(fcs_df.describe())
 
-fn.histogram_gate('RL2-A', log=False, bin_array=np.arange(0, 6000,1))
-fcs_df = fn.get_flow_cytometry_dataframe()
-print(fcs_df.describe())
+# fn.histogram_gate('RL2-A', log=False, bin_array=np.arange(0, 6000,1))
+# fcs_df = fn.get_flow_cytometry_dataframe()
+# print(fcs_df.describe())
 
-fn.reset_gates()
+# fn.reset_gates()
 
-fcs_df = fn.get_flow_cytometry_dataframe()
-print(fcs_df.describe())
+# fcs_df = fn.get_flow_cytometry_dataframe()
+# print(fcs_df.describe())
 
-fn.histogram_gate('RL2-A', log=False, bin_array=np.arange(0, 6000,1))
-fcs_df = fn.get_flow_cytometry_dataframe()
-print(fcs_df.describe())
+# fn.histogram_gate('RL2-A', log=False, bin_array=np.arange(0, 6000,1))
+# fcs_df = fn.get_flow_cytometry_dataframe()
+# print(fcs_df.describe())
+
+# print(fcs_df.ImageFlag)
+
+# fcs_df = fn.get_flow_cytometry_dataframe()
+# print(fcs_df.describe())
+
+x_variable = 'SSC-A'
+y_variable = 'RL2-A'
+fn.scatter_gate(x_variable, y_variable, False, False, 10000)
+stored_gates = prs.load_data('stored_gates')
