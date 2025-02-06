@@ -12,6 +12,8 @@ import pandas as pd
 import os
 import skimage
 import matplotlib.pyplot as plt
+import span_hstogram_selection as span
+import pickle_read_save as prs
 
 
 class flow_cytometry_class(object):
@@ -41,9 +43,16 @@ class flow_cytometry_class(object):
             fc_df[ch] = list(fd_array[:,i])
             i+=1
         
+        fc_df = fc_df[fc_df>0]
         self.fcs_dataframe = fc_df
         self.channels_list = channels_list
         
+        try:
+            gate_dict = prs.load_data('stored_gates')
+            self.gate_dict = gate_dict
+        except FileNotFoundError:
+            self.gate_dict = {}
+       
         if images_folder != 'none':
             images_list = os.listdir(images_folder)
             print('loading images')
@@ -58,6 +67,7 @@ class flow_cytometry_class(object):
         else:
             print(f"no image folder selected: {images_folder}")
     
+    
     def get_image_arrays(self):
         return self.image_arrays
     
@@ -67,7 +77,31 @@ class flow_cytometry_class(object):
     def get_metadata(self):
         self.metadata
         
+    
+    def reset_gates(self):
+        val = input('Warning, this operation will erase all stored gates and remove them from the dataframe: YES/NO: ')
+        val = val.upper()
+        if val == 'YES':
+            fcs_df = self.get_flow_cytometry_dataframe()
+            fcs_df = fcs_df.drop(list(self.gate_dict.keys()), axis=1)
+            
+            self.gate_dict = {}
+            prs.save_data(self.gate_dict, 'stored_gates')
+            
+            self.fcs_dataframe  = fcs_df
+            
+        elif val == 'NO':
+            print(self.get_gates())
+            print('Gates have not not been reset.')
+            pass
 
+        else:
+            self.reset_gates()
+    
+    def get_gates(self):
+        return self.gate_dict
+    
+    
     def segment_cell_images(self, 
                             hard_threshold=775, min_area=35, check_segmentation=False):
 
@@ -102,16 +136,47 @@ class flow_cytometry_class(object):
         self.cell_masks = cell_masks
         self.cell_areas = cell_areas
         
-    
     def get_cell_masks(self):
         return self.cell_masks
 
-    
     def get_cell_areas(self):
         return self.cell_areas
 
-    # gating functions will be implemented soon
     
+    def histogram_gate(self, variable, log, bin_array):
+        
+        fcs_df = self.get_flow_cytometry_dataframe()
+        gate_dict = self.get_gates()
+        
+        if log == True:
+            # gated_df = gated_df[gated_df[variable]>0]
+            x = np.log10(fcs_df[variable])
+        else:
+            x = fcs_df[variable]
+        
+        i = 0
+        n = 1
+        while i==0:
+            gate_name = variable+'_gate_'+str(n)
+            if gate_name not in self.gate_dict:
+                i+=1
+            else:
+                n+=1
+        
+        span.return_selected_ranges(x, bin_array, variable, gate_name)
+        
+        loaded_gate = prs.load_data(gate_name)
+        gate_dict[gate_name] = loaded_gate
+        prs.save_data(gate_dict, 'stored_gates')
+        self.gate_dict = gate_dict
+        os.remove(gate_name)
+        print(self.get_gates())
+        
+        gate_range = gate_dict[gate_name]
+        fcs_df[gate_name] = 0
+        fcs_df[gate_name] = np.where(x.between(gate_range[0], gate_range[1]), 1, fcs_df[gate_name])
+        self.fcs_dataframe = fcs_df
+
     
 
 
