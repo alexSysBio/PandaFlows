@@ -3,6 +3,7 @@ from matplotlib.widgets import PolygonSelector, SpanSelector
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import pickle_read_save as prs
 
 
 def get_middle_of_bins(bin_edges):
@@ -43,8 +44,9 @@ def return_selected_ranges(x, bin_array, variable, gate_name):
             fig.canvas.draw_idle()
         
         print(region_x)
-        with open(gate_name, 'wb') as handle:
-            pickle.dump([region_x[0], region_x[-1], 'histogram_gate'], handle)
+        prs.save_data([region_x[0], region_x[-1], 'histogram_gate'], gate_name)
+        # with open(gate_name, 'wb') as handle:
+        #     pickle.dump([region_x[0], region_x[-1], 'histogram_gate'], handle)
 
     span = SpanSelector(
         ax1,
