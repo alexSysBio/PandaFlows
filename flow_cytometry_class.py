@@ -12,7 +12,7 @@ import pandas as pd
 import os
 import skimage
 import matplotlib.pyplot as plt
-import span_hstogram_selection as span
+import span_histogram_selection as span
 import pickle_read_save as prs
 
 
