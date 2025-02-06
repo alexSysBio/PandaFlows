@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.widgets import PolygonSelector, SpanSelector
 import matplotlib.widgets as mwidgets
-import span_hstogram_selection as sh
+import span_histogram_selection as sh
 
 fc_data_ceph = '/Volumes/Data_01/Alex Papagiannakis/Microscopy/DRAQ5_staining/CJW7323/Flow_cytometry_CJW7323/02042025_CJW7323_M9glyCAAT_Ceph50.fcs'
 fc_data_nont = '/Volumes/Data_01/Alex Papagiannakis/Microscopy/DRAQ5_staining/CJW7323/Flow_cytometry_CJW7323/02042025_CJW7323_M9glyCAAT_exp.fcs'
