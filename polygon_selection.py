@@ -101,7 +101,8 @@ def return_markers_in_polygon(x, y, x_variable, y_variable, gate_name, colormap)
     prs.save_data(gated_data, gate_name)
     
 
-def get_markers_inside_gate(point, polygon):
+def get_markers_inside_gate(x,y, polygon):
+    point = get_point_from_coordinates(x,y)
     if polygon.contains(point):
         return 1
     else:
