@@ -42,16 +42,19 @@ class flow_cytometry_class(object):
         for ch in channels_list:
             fc_df[ch] = list(fd_array[:,i])
             i+=1
+            
+        self.channels_list = channels_list
         
         fc_df = fc_df[fc_df>0]
-        self.fcs_dataframe = fc_df
-        self.channels_list = channels_list
         
         try:
             gate_dict = prs.load_data('stored_gates')
             self.gate_dict = gate_dict
         except FileNotFoundError:
             self.gate_dict = {}
+
+        fcs_df = ga.apply_gates(dataframe, gate_dict)
+        self.fcs_dataframe = fc_df
        
         if images_folder != 'none':
             images_list = os.listdir(images_folder)
