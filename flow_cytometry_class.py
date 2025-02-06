@@ -13,6 +13,7 @@ import os
 import skimage
 import matplotlib.pyplot as plt
 import span_histogram_selection as span
+import polygon_selection as poly
 import pickle_read_save as prs
 
 
@@ -53,7 +54,7 @@ class flow_cytometry_class(object):
         except FileNotFoundError:
             self.gate_dict = {}
 
-        fcs_df = ga.apply_gates(dataframe, gate_dict)
+        # fcs_df = ga.apply_gates(dataframe, gate_dict)
         self.fcs_dataframe = fc_df
        
         if images_folder != 'none':
@@ -146,6 +147,7 @@ class flow_cytometry_class(object):
         return self.cell_areas
 
     
+    
     def histogram_gate(self, variable, log, bin_array):
         
         fcs_df = self.get_flow_cytometry_dataframe()
@@ -154,13 +156,15 @@ class flow_cytometry_class(object):
         if log == True:
             # gated_df = gated_df[gated_df[variable]>0]
             x = np.log10(fcs_df[variable])
+            log_string = '_log'
         else:
             x = fcs_df[variable]
+            log_string = '_lin'
         
         i = 0
         n = 1
         while i==0:
-            gate_name = variable+'_gate_'+str(n)
+            gate_name = variable+log_string+'_gate_'+str(n)
             if gate_name not in self.gate_dict:
                 i+=1
             else:
@@ -178,6 +182,59 @@ class flow_cytometry_class(object):
         gate_range = gate_dict[gate_name]
         fcs_df[gate_name] = 0
         fcs_df[gate_name] = np.where(x.between(gate_range[0], gate_range[1]), 1, fcs_df[gate_name])
+        self.fcs_dataframe = fcs_df
+        
+
+def scatter_gate(self, x_variable, y_variable, x_log, y_log):
+        
+        fcs_df = self.get_flow_cytometry_dataframe()
+        gate_dict = self.get_gates()
+        
+        if x_log == True:
+            # gated_df = gated_df[gated_df[variable]>0]
+            x = np.log10(fcs_df[x_variable])
+            xlog_string = '_log'
+        else:
+            x = fcs_df[x_variable]
+            xlog_string = '_lin'
+
+        if y_log == True:
+            # gated_df = gated_df[gated_df[variable]>0]
+            y = np.log10(fcs_df[y_variable])
+            ylog_string = 'log'
+        else:
+            y = fcs_df[y_variable]
+            ylog_string = 'lin'
+        
+        log_string = xlog_string+ylog_string
+        
+        i = 0
+        n = 1
+        while i==0:
+            gate_name = x_variable+'_'+y_variable+log_string+'_gate_'+str(n)
+            if gate_name not in self.gate_dict:
+                i+=1
+            else:
+                n+=1
+        
+        poly.return_markers_in_polygon(x, y, x_variable, y_variable, gate_name, colormap='rainbow')
+        
+        loaded_gate = prs.load_data(gate_name)
+        gate_dict[gate_name] = loaded_gate
+        prs.save_data(gate_dict, 'stored_gates')
+        self.gate_dict = gate_dict
+        os.remove(gate_name)
+        print(self.get_gates())
+        
+        polygon_coordinates = gate_dict[gate_name][0]
+        polygon = poly.get_polygon_from_coordinates(polygon_coordinates)
+        
+        gate_df = pd.DataFrame()
+        gate_df['x'] = x
+        gate_df['y'] = y
+        gate_df['g'] = gate_df.apply(lambda x: poly.get_markers_inside_gate(x.x,x.y, polygon), axis=1)
+        
+        fcs_df[gate_name] = gate_df.g
         self.fcs_dataframe = fcs_df
 
     
