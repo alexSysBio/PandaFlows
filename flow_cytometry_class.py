@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import span_histogram_selection as span
 import polygon_selection as poly
 import pickle_read_save as prs
+import access_fcs_fields as af
 
 
 class flow_cytometry_class(object):
@@ -52,8 +53,27 @@ class flow_cytometry_class(object):
             gate_dict = prs.load_data('stored_gates')
             self.gate_dict = gate_dict
         except FileNotFoundError:
-            self.gate_dict = {}
-
+            gate_dict = {}
+            self.gate_dict = gate_dict
+        
+        print('Applying stored gates to the dataframe...')
+        for gt in gate_dict:
+            if gate_dict[gt][-1] == 'histogram_gate':
+                print(f'Applying histogram gate {gt}')
+                gate_range = gate_dict[gt][0]
+                x_variable = gate_dict[gt][1]
+                log_bool = gate_dict[gt][2]
+                x, log_string = af.access_single_column_data(fc_df, x_variable, log_bool)
+                fc_df = span.apply_histogram_gate_to_dataframe(x, gate_range, gt, fc_df)
+            elif gate_dict[gt][-1] == 'polygon_gate':
+                print(f'Applying polygon gate {gt}')
+                polygon_coords = gate_dict[gt][0]
+                variables = gate_dict[gt][1]
+                log_bools = gate_dict[gt][2]
+                x, y, log_string = af.access_double_column_data(fc_df, variables, log_bools)
+                fc_df = poly.apply_polygon_gate_to_dataframe(x, y, polygon_coords, gt, fc_df)
+                
+                
         # fcs_df = ga.apply_gates(dataframe, gate_dict)
         self.fcs_dataframe = fc_df
        
@@ -153,13 +173,7 @@ class flow_cytometry_class(object):
         fcs_df = self.get_flow_cytometry_dataframe()
         gate_dict = self.get_gates()
         
-        if log == True:
-            # gated_df = gated_df[gated_df[variable]>0]
-            x = np.log10(fcs_df[variable])
-            log_string = '_log'
-        else:
-            x = fcs_df[variable]
-            log_string = '_lin'
+        x, log_string = af.access_single_column_data(fcs_df, variable, log)
         
         i = 0
         n = 1
@@ -179,9 +193,8 @@ class flow_cytometry_class(object):
         os.remove(gate_name)
         print(self.get_gates())
         
-        gate_range = gate_dict[gate_name]
-        fcs_df[gate_name] = 0
-        fcs_df[gate_name] = np.where(x.between(gate_range[0], gate_range[1]), 1, fcs_df[gate_name])
+        gate_range = gate_dict[gate_name][0]
+        fcs_df = span.apply_histogram_gate_to_dataframe(x, gate_range, gate_name, fcs_df)
         self.fcs_dataframe = fcs_df
         
 
@@ -190,23 +203,25 @@ class flow_cytometry_class(object):
             fcs_df = self.get_flow_cytometry_dataframe()
             gate_dict = self.get_gates()
             
-            if x_log == True:
-                # gated_df = gated_df[gated_df[variable]>0]
-                x = np.log10(fcs_df[x_variable])
-                xlog_string = '_log'
-            else:
-                x = fcs_df[x_variable]
-                xlog_string = '_lin'
-
-            if y_log == True:
-                # gated_df = gated_df[gated_df[variable]>0]
-                y = np.log10(fcs_df[y_variable])
-                ylog_string = 'log'
-            else:
-                y = fcs_df[y_variable]
-                ylog_string = 'lin'
+            x, y, log_string = af.access_double_column_data(fcs_df, (x_variable, y_variable), (x_log, y_log))
             
-            log_string = xlog_string+ylog_string
+            # if x_log == True:
+            #     # gated_df = gated_df[gated_df[variable]>0]
+            #     x = np.log10(fcs_df[x_variable])
+            #     xlog_string = '_log'
+            # else:
+            #     x = fcs_df[x_variable]
+            #     xlog_string = '_lin'
+
+            # if y_log == True:
+            #     # gated_df = gated_df[gated_df[variable]>0]
+            #     y = np.log10(fcs_df[y_variable])
+            #     ylog_string = 'log'
+            # else:
+            #     y = fcs_df[y_variable]
+            #     ylog_string = 'lin'
+            
+            # log_string = xlog_string+ylog_string
             
             i = 0
             n = 1
@@ -227,14 +242,8 @@ class flow_cytometry_class(object):
             print(self.get_gates())
             
             polygon_coordinates = gate_dict[gate_name][0]
-            polygon = poly.get_polygon_from_coordinates(polygon_coordinates)
+            fcs_df = poly.apply_polygon_gate_to_dataframe(x, y, polygon_coordinates, gate_name, fcs_df)
             
-            gate_df = pd.DataFrame()
-            gate_df['x'] = x
-            gate_df['y'] = y
-            gate_df['g'] = gate_df.apply(lambda x: poly.get_markers_inside_gate(x.x,x.y, polygon), axis=1)
-            
-            fcs_df[gate_name] = gate_df.g
             self.fcs_dataframe = fcs_df
 
         
