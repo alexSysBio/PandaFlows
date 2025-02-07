@@ -153,7 +153,7 @@ class flow_cytometry_class(object):
         
     # ------------------------ Gating -----------------------#
     def import_gates(self, gate_path):
-        imported_gate_dict = prs(gate_path)
+        imported_gate_dict = prs.load_data(gate_path)
         val = input('Warning, this operation will overwrite all previously stored gates. Cnitnue?: YES/NO: ')
         val = val.upper()
         i = 0
