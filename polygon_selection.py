@@ -116,9 +116,12 @@ def return_markers_in_polygon(x, y, x_variable, y_variable, gate_name, sample_si
     polygon_verts = selector.poly.verts
     # gated_data = selector.xys[selector.ind].tolist()
     # gated_data.extend(polygon_verts)  # Add the polygon vertices as a list
-    gated_data = [polygon_verts, 'polygon_gate']
-    prs.save_data(gated_data, gate_name)
     
+    log_boolean = determine_log_boolean(gate_name)
+    
+    gated_data = [polygon_verts, (x_variable, y_variable), log_boolean, 'polygon_gate']
+    prs.save_data(gated_data, gate_name)
+
 
 def get_markers_inside_gate(x,y, polygon):
     if np.isnan(x) or np.isnan(y):
@@ -131,3 +134,30 @@ def get_markers_inside_gate(x,y, polygon):
 
 def get_polygon_from_coordinates(coord_list):
     return shape.Polygon(coord_list)
+
+
+def apply_polygon_gate_to_dataframe(x, y, polygon_coords, gate_name, dataframe):
+    
+    polygon = get_polygon_from_coordinates(polygon_coords)
+    
+    gate_df = pd.DataFrame()
+    gate_df['x'] = x
+    gate_df['y'] = y
+    gate_df['g'] = gate_df.apply(lambda x: get_markers_inside_gate(x.x,x.y, polygon), axis=1)
+    
+    dataframe[gate_name] = gate_df.g
+    
+    return dataframe
+    
+def determine_log_boolean(gate_name):
+    
+    if 'loglog' in gate_name:
+        return (True, True)
+    elif 'loglin' in gate_name:
+        return (True, False)
+    elif 'linlog' in gate_name:
+        return (False, True)
+    elif 'linlin' in gate_name:
+        return (False, False)
+    else:
+        raise ValueError(f"The log boolean index in gate {gate_name} is not recognized.")
