@@ -20,14 +20,14 @@ import access_fcs_fields as af
 
 class flow_cytometry_class(object):
     
-    def __init__(self, fcs_path, images_folder):
+    def __init__(self, fcs_path, images_folder, experiment_id):
         
         fd = flowio.FlowData(fcs_path)
         
-        channels_list = []
+        self.experiment_id = experiment_id
         
+        channels_list = []
         for ch in range(1, len(fd.channels)+1):
-            
             ch_string = fd.channels[str(ch)]
             channels_list.append(ch_string[list(ch_string.keys())[0]])
         
@@ -50,7 +50,7 @@ class flow_cytometry_class(object):
         fc_df = fc_df[fc_df>0]
         
         try:
-            gate_dict = prs.load_data('stored_gates')
+            gate_dict = prs.load_data('stored_gates_'+self.experiment_id)
             self.gate_dict = gate_dict
         except FileNotFoundError:
             gate_dict = {}
@@ -110,7 +110,7 @@ class flow_cytometry_class(object):
             fcs_df = fcs_df.drop(list(self.gate_dict.keys()), axis=1)
             
             self.gate_dict = {}
-            prs.save_data(self.gate_dict, 'stored_gates')
+            prs.save_data(self.gate_dict, 'stored_gates_'+self.experiment_id)
             
             self.fcs_dataframe  = fcs_df
             
@@ -188,7 +188,7 @@ class flow_cytometry_class(object):
         
         loaded_gate = prs.load_data(gate_name)
         gate_dict[gate_name] = loaded_gate
-        prs.save_data(gate_dict, 'stored_gates')
+        prs.save_data(gate_dict, 'stored_gates_'+self.experiment_id)
         self.gate_dict = gate_dict
         os.remove(gate_name)
         print(self.get_gates())
@@ -205,24 +205,6 @@ class flow_cytometry_class(object):
             
             x, y, log_string = af.access_double_column_data(fcs_df, (x_variable, y_variable), (x_log, y_log))
             
-            # if x_log == True:
-            #     # gated_df = gated_df[gated_df[variable]>0]
-            #     x = np.log10(fcs_df[x_variable])
-            #     xlog_string = '_log'
-            # else:
-            #     x = fcs_df[x_variable]
-            #     xlog_string = '_lin'
-
-            # if y_log == True:
-            #     # gated_df = gated_df[gated_df[variable]>0]
-            #     y = np.log10(fcs_df[y_variable])
-            #     ylog_string = 'log'
-            # else:
-            #     y = fcs_df[y_variable]
-            #     ylog_string = 'lin'
-            
-            # log_string = xlog_string+ylog_string
-            
             i = 0
             n = 1
             while i==0:
@@ -236,7 +218,7 @@ class flow_cytometry_class(object):
             
             loaded_gate = prs.load_data(gate_name)
             gate_dict[gate_name] = loaded_gate
-            prs.save_data(gate_dict, 'stored_gates')
+            prs.save_data(gate_dict, 'stored_gates_'+self.experiment_id)
             self.gate_dict = gate_dict
             os.remove(gate_name)
             print(self.get_gates())
