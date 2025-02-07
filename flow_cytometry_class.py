@@ -19,7 +19,12 @@ import access_fcs_fields as af
 
 
 class flow_cytometry_class(object):
-    
+    """_summary_
+
+    Args:
+        object (_type_): a class that includes functions for converting .fcs data into Pandas DataFrames,
+        segmenting cells from flow cytometry images, and gate histogram or scatter plot data.
+    """
     def __init__(self, fcs_path, images_folder, experiment_id):
         
         fd = flowio.FlowData(fcs_path)
@@ -73,8 +78,6 @@ class flow_cytometry_class(object):
                 x, y, log_string = af.access_double_column_data(fc_df, variables, log_bools)
                 fc_df = poly.apply_polygon_gate_to_dataframe(x, y, polygon_coords, gt, fc_df)
                 
-                
-        # fcs_df = ga.apply_gates(dataframe, gate_dict)
         self.fcs_dataframe = fc_df
        
         if images_folder != 'none':
@@ -92,6 +95,7 @@ class flow_cytometry_class(object):
             print(f"no image folder selected: {images_folder}")
     
     
+    # ------------------------ all the get functions -----------------------#
     def get_image_arrays(self):
         return self.image_arrays
     
@@ -101,31 +105,17 @@ class flow_cytometry_class(object):
     def get_metadata(self):
         self.metadata
         
-    
-    def reset_gates(self):
-        val = input('Warning, this operation will erase all stored gates and remove them from the dataframe: YES/NO: ')
-        val = val.upper()
-        if val == 'YES':
-            fcs_df = self.get_flow_cytometry_dataframe()
-            fcs_df = fcs_df.drop(list(self.gate_dict.keys()), axis=1)
-            
-            self.gate_dict = {}
-            prs.save_data(self.gate_dict, 'stored_gates_'+self.experiment_id)
-            
-            self.fcs_dataframe  = fcs_df
-            
-        elif val == 'NO':
-            print(self.get_gates())
-            print('Gates have not not been reset.')
-            pass
+    def get_cell_masks(self):
+        return self.cell_masks
 
-        else:
-            self.reset_gates()
+    def get_cell_areas(self):
+        return self.cell_areas
     
     def get_gates(self):
         return self.gate_dict
+
     
-    
+    # ------------------------ Image segmentation -----------------------#
     def segment_cell_images(self, 
                             hard_threshold=775, min_area=35, check_segmentation=False):
 
@@ -160,13 +150,43 @@ class flow_cytometry_class(object):
         self.cell_masks = cell_masks
         self.cell_areas = cell_areas
         
-    def get_cell_masks(self):
-        return self.cell_masks
+        
+    # ------------------------ Gating -----------------------#
+    def import_gates(self, gate_path):
+        imported_gate_dict = prs(gate_path)
+        val = input('Warning, this operation will overwrite all previously stored gates. Cnitnue?: YES/NO: ')
+        val = val.upper()
+        i = 0
+        while i == 0:
+            if val == 'YES':
+                self.gate_dict = imported_gate_dict
+                prs.save_data(imported_gate_dict, 'stored_gates_'+self.experiment_id)
+                i+=1
+            elif val == 'NO':
+                print('Gate-import aborted by the user')
+                pass
+                i+=1
 
-    def get_cell_areas(self):
-        return self.cell_areas
+    def reset_gates(self):
+        val = input('Warning, this operation will erase all stored gates and remove them from the dataframe: YES/NO: ')
+        val = val.upper()
+        if val == 'YES':
+            fcs_df = self.get_flow_cytometry_dataframe()
+            fcs_df = fcs_df.drop(list(self.gate_dict.keys()), axis=1)
+            
+            self.gate_dict = {}
+            prs.save_data(self.gate_dict, 'stored_gates_'+self.experiment_id)
+            
+            self.fcs_dataframe  = fcs_df
+            
+        elif val == 'NO':
+            print(self.get_gates())
+            print('Gates have not not been reset.')
+            pass
 
-    
+        else:
+            self.reset_gates()
+            
     
     def histogram_gate(self, variable, log, bin_array):
         
