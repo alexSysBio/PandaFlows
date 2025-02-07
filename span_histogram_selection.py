@@ -43,8 +43,13 @@ def return_selected_ranges(x, bin_array, variable, gate_name):
             ax2.set_ylim(region_y.min(), region_y.max())
             fig.canvas.draw_idle()
         
+        if 'log' in gate_name:
+            log_bool = True
+        else:
+            log_bool = False
+        
         print(region_x)
-        prs.save_data([region_x[0], region_x[-1], 'histogram_gate'], gate_name)
+        prs.save_data([(region_x[0], region_x[-1]), variable, log_bool, 'histogram_gate'], gate_name)
         # with open(gate_name, 'wb') as handle:
         #     pickle.dump([region_x[0], region_x[-1], 'histogram_gate'], handle)
 
@@ -59,3 +64,13 @@ def return_selected_ranges(x, bin_array, variable, gate_name):
     )
     # Set useblit=True on most backends for enhanced performance.
     plt.show()
+    
+
+def apply_histogram_gate_to_dataframe(x, gate_range, gate_name, dataframe):
+        
+    dataframe[gate_name] = 0
+    dataframe[gate_name] = np.where(x.between(gate_range[0], gate_range[1]), 1, dataframe[gate_name])
+    dataframe[gate_name] = np.where(x.isnull(), np.nan, dataframe[gate_name])
+    
+    return dataframe
+
