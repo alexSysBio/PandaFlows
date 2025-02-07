@@ -4,3 +4,11 @@ This repository includes functions that can be used to transfer flow cytometry d
 The class uses the FlowIO fcs parser:
 https://github.com/whitews/FlowIO
 
+The initializatio nof the class will store a flow cytometry database which can be accessed using the 
+self.get_flow_cytometry_dataframe() function.
+
+To apply a gate on histogram data use the self.histogram_gate() function, specifying the selected variable, if it is linear or log-transformed, and the array of the histogram bins
+
+To apply a polygon gate on scatter-plot data, use the self.scatter_gate() function, specifying the x and y variables, if they are linear or log-transformed and the number of sampled data that will be used to draw the polygon.
+
+The class also includes functions to read and segment cell images, linked to the ImageFlag column in the dataframe. Useful statistics such as the cell are are also returned.
