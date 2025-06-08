@@ -21,3 +21,11 @@ self.get_flow_cytometry_dataframe() function.
 ## Cell image operations
 *Cell image segmentation*
 <br>The class also includes functions to read and segment cell images, linked to the ImageFlag column in the dataframe. Useful statistics such as the cell are are also returned.
+
+ Cite:
+    
+    Nonequilibrium polysome dynamics promote chromosome segregation and its coupling to cell growth in Escherichia coli
+    
+    Alexandros Papagiannakis, Qiwei Yu, Sander K. Govers, Wei-Hsiang Lin,  Ned S. Wingreen, Christine Jacobs-Wagner
+    
+    eLife2025;14:RP104276 DOI: https://doi.org/10.7554/eLife.104276.3
