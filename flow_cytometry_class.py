@@ -33,7 +33,10 @@ class flow_cytometry_class(object):
         
         channels_list = []
         for ch in range(1, len(fd.channels)+1):
-            ch_string = fd.channels[str(ch)]
+            try:
+                ch_string = fd.channels[str(ch)]
+            except KeyError:
+                ch_string = fd.channels[ch]
             channels_list.append(ch_string[list(ch_string.keys())[0]])
         
         print(len(fd.events), 'events')
